@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Nano Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .nano-container {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nano-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+            animation: scan 2s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .nano-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #00ff88;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .nano-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            color: #ffffff;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+        
+        .nano-input:focus {
+            outline: none;
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+            box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.2);
+        }
+        
+        .nano-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .nano-button {
+            width: 100%;
+            background: linear-gradient(45deg, #00ff88, #00cc6a);
+            border: none;
+            border-radius: 6px;
+            padding: 12px;
+            color: #000000;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+        }
+        
+        .nano-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+        }
+        
+        .nano-button:active {
+            transform: translateY(0);
+        }
+        
+        .nano-button:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .nano-status {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 11px;
+            min-height: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .nano-status.error {
+            color: #ff4444;
+        }
+        
+        .nano-status.success {
+            color: #00ff88;
+        }
+        
+        /* Loader Styles */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .loader-container {
+            text-align: center;
+        }
+        
+        .nano-loader {
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-top: 2px solid #00ff88;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loader-text {
+            color: #00ff88;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .loader-progress {
+            width: 200px;
+            height: 2px;
+            background: rgba(0, 255, 136, 0.3);
+            border-radius: 1px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        
+        .loader-progress-bar {
+            height: 100%;
+            background: #00ff88;
+            width: 0%;
+            animation: progress 3s ease-in-out;
+        }
+        
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        
+        /* 404 Error Page */
+        .error-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            color: #ff4444;
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+            animation: glitch 1s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        
+        .error-message {
+            font-size: 18px;
+            color: #ffffff;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .error-details {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .back-button {
+            margin-top: 30px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Particles Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(0, 255, 136, 0.3);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particles Background -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Main Login Container -->
+    <div class="nano-container" id="loginContainer">
+        <div class="nano-title">⚡ Nano Access</div>
+        
+        <input type="text" class="nano-input" id="username" placeholder="User ID" maxlength="20">
+        <input type="password" class="nano-input" id="password" placeholder="Password" maxlength="20">
+        
+        <button class="nano-button" id="loginBtn" onclick="attemptLogin()">Access</button>
+        
+        <div class="nano-status" id="status"></div>
+    </div>
+    
+    <!-- Loader Overlay -->
+    <div class="loader-overlay" id="loader">
+        <div class="loader-container">
+            <div class="nano-loader"></div>
+            <div class="loader-text">Authenticating...</div>
+            <div class="loader-progress">
+                <div class="loader-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 404 Error Page -->
+    <div class="error-page" id="errorPage">
+        <div class="error-code">404</div>
+        <div class="error-message">Access Denied</div>
+        <div class="error-details">Invalid credentials detected</div>
+        <button class="back-button" onclick="goBack()">← Back to Login</button>
+    </div>
+
+    <script>
+        // Create particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Speech function
+        function speak(message) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(message);
+                const voices = speechSynthesis.getVoices();
+                const femaleVoice = voices.find(voice => 
+                    voice.name.includes('Female') || 
+                    voice.name.includes('Karen') || 
+                    voice.name.includes('Samantha') ||
+                    voice.name.includes('Victoria') ||
+                    voice.gender === 'female'
+                );
+                
+                if (femaleVoice) {
+                    utterance.voice = femaleVoice;
+                } else if (voices.length > 1) {
+                    utterance.voice = voices[1];
+                }
+                
+                utterance.rate = 0.8;
+                utterance.pitch = 1.2;
+                utterance.volume = 0.8;
+                
+                speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // Show status message
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `nano-status ${type}`;
+            
+            setTimeout(() => {
+                status.textContent = '';
+                status.className = 'nano-status';
+            }, 3000);
+        }
+        
+        // Show loader
+        function showLoader() {
+            document.getElementById('loader').style.display = 'flex';
+        }
+        
+        // Hide loader
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+        
+        // Show 404 error page
+        function show404() {
+            document.getElementById('errorPage').style.display = 'flex';
+        }
+        
+        // Hide 404 error page
+        function hide404() {
+            document.getElementById('errorPage').style.display = 'none';
+        }
+        
+        // Go back to login
+        function goBack() {
+            hide404();
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('loginBtn').disabled = false;
+        }
+        
+        // Attempt login
+        function attemptLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const loginBtn = document.getElementById('loginBtn');
+            
+            // Validation
+            if (!username || !password) {
+                const message = "Please enter both credentials";
+                showStatus(message, 'error');
+                speak(message);
+                return;
+            }
+            
+            // Disable button during processing
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Processing...';
+            
+            // Check credentials
+            if (username === "Hacker@85" && password === "08052008") {
+                // Success flow
+                speak("Access granted. Redirecting...");
+                showStatus("Access granted!", 'success');
+                
+                setTimeout(() => {
+                    showLoader();
+                    
+                    // Redirect after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = "https://www.google.com"; // Change this to your desired website
+                    }, 3000);
+                }, 500);
+                
+            } else {
+                // Error flow
+                speak("Access denied. Invalid credentials.");
+                showStatus("Access denied!", 'error');
+                
+                setTimeout(() => {
+                    show404();
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Access';
+                }, 1000);
+            }
+        }
+        
+        // Enter key support
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const loginBtn = document.getElementById('loginBtn');
+                if (!loginBtn.disabled) {
+                    attemptLogin();
+                }
+            }
+        });
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            createParticles();
+            setTimeout(() => {
+                speak("Nano access terminal initialized");
+            }, 500);
+        });
+        
+        // Load voices
+        if ('speechSynthesis' in window) {
+            speechSynthesis.onvoiceschanged = function() {
+                // Voices loaded
+            };
+        }
+    </script>
+</body>
+</html>
